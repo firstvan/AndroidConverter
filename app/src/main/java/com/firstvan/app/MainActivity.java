@@ -71,7 +71,7 @@ public class MainActivity extends ActionBarActivity {
 
         try {
             startActivityForResult(
-                    Intent.createChooser(intent, "Fájl kiválasztása konvertálásra" +
+                    Intent.createChooser(intent, "Fajl kiválasztasa konvertalasra" +
                             ""),
                     FILE_SELECT_CODE);
         } catch (android.content.ActivityNotFoundException ex) {
@@ -100,15 +100,15 @@ public class MainActivity extends ActionBarActivity {
 
     public void ConvertIt(View v){
         if(fileSaveText.getText().toString().isEmpty()){
-            Toast.makeText(this, "Nincs kitöltve a mentési hely.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Nincs kitöltve a mentesi hely.", Toast.LENGTH_SHORT).show();
         }
 
         if(fileOpenText.getText().toString().isEmpty()){
-            Toast.makeText(this, "Nincs konvertálandó fájl.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Nincs konvertalando fajl.", Toast.LENGTH_SHORT).show();
         }
 
         String saveFile = "/sdcard/Atalakito/" + fileSaveText.getText() + ".txt";
-        final ExcelConverter excelConverter = new ExcelConverter(fileOpenText.getText().toString(), saveFile, MainActivity.this);
+        final ExcelConverter excelConverter = new ExcelConverter(fileOpenText.getText().toString(), saveFile, MainActivity.this, 1, 7);
         excelConverter.execute("");
 
 
