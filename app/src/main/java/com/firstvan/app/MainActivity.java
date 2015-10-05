@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -17,6 +18,10 @@ public class MainActivity extends ActionBarActivity {
 
     private EditText fileOpenText;
     private EditText fileSaveText;
+    private EditText itemCollNo;
+    private EditText pieceCollNo;
+    private CheckBox check;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +30,9 @@ public class MainActivity extends ActionBarActivity {
 
         fileOpenText = (EditText)findViewById(R.id.openFileText);
         fileSaveText = (EditText)findViewById(R.id.saveFileText);
+        itemCollNo = (EditText)findViewById(R.id.ItemNumberColl);
+        pieceCollNo = (EditText)findViewById(R.id.PieceNumberColl);
+        check = (CheckBox)findViewById(R.id.appendToFile);
 
         File folder = new File(Environment.getExternalStorageDirectory() + "/Atalakito");
         if (!folder.exists()) {
@@ -101,14 +109,20 @@ public class MainActivity extends ActionBarActivity {
     public void ConvertIt(View v){
         if(fileSaveText.getText().toString().isEmpty()){
             Toast.makeText(this, "Nincs kitöltve a mentesi hely.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         if(fileOpenText.getText().toString().isEmpty()){
             Toast.makeText(this, "Nincs konvertalando fajl.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         String saveFile = "/sdcard/Atalakito/" + fileSaveText.getText() + ".txt";
-        final ExcelConverter excelConverter = new ExcelConverter(fileOpenText.getText().toString(), saveFile, MainActivity.this, 1, 7);
+
+        int item = Integer.parseInt(itemCollNo.getText().toString());
+        int piece = Integer.parseInt(pieceCollNo.getText().toString());
+        boolean c = check.isChecked();
+        final ExcelConverter excelConverter = new ExcelConverter(fileOpenText.getText().toString(), saveFile, MainActivity.this, item, piece, c);
         excelConverter.execute("");
 
 

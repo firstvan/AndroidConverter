@@ -30,16 +30,17 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
     ProgressDialog progressDialog;
     private int itemNoColumn;
     private int pieceNoColumn;
+    private boolean appendToFile;
 
 
-    public ExcelConverter(String eFile, String sFile, Context context, int itNo, int piNo){
+    public ExcelConverter(String eFile, String sFile, Context context, int itNo, int piNo, boolean appendToFile){
         excelFile = eFile;
         saveFile = sFile;
         percentage = 0.0;
         this.context = context;
         itemNoColumn = itNo;
         pieceNoColumn = piNo;
-        Toast.makeText(context, String.valueOf(pieceNoColumn), Toast.LENGTH_LONG);
+        this.appendToFile = appendToFile;
     }
 
     public String getExcelFile() {
@@ -64,6 +65,30 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
 
     public void setPercentage(double percentage) {
         this.percentage = percentage;
+    }
+
+    public int getItemNoColumn() {
+        return itemNoColumn;
+    }
+
+    public void setItemNoColumn(int itemNoColumn) {
+        this.itemNoColumn = itemNoColumn;
+    }
+
+    public int getPieceNoColumn() {
+        return pieceNoColumn;
+    }
+
+    public void setPieceNoColumn(int pieceNoColumn) {
+        this.pieceNoColumn = pieceNoColumn;
+    }
+
+    public boolean isAppendToFile() {
+        return appendToFile;
+    }
+
+    public void setAppendToFile(boolean appendToFile) {
+        this.appendToFile = appendToFile;
     }
 
     @Override
@@ -110,9 +135,15 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
 
             FileInputStream myInput = null;
             try {
-                BufferedWriter bw = new BufferedWriter(new FileWriter(new File(saveFile)));
-                bw.write("Cikkszam\tdarab\n");
+                BufferedWriter bw;
 
+                if(appendToFile) {
+                    bw = new BufferedWriter(new FileWriter(saveFile, true));
+                }
+                else {
+                    bw = new BufferedWriter(new FileWriter(new File(saveFile)));
+                    bw.write("Cikkszam\tdarab\n");
+                }
                 myInput = new FileInputStream(excelFile);
                 // Create a POIFSFileSystem object
                 POIFSFileSystem myFileSystem = new POIFSFileSystem(myInput);
@@ -194,8 +225,6 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
             } catch (IOException e) {
                 return -3;
             }
-
-
         }
 
         return counter;
