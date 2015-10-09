@@ -86,9 +86,13 @@
     <orderEntry type="jdk" jdkName="Android API 21 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="appcompat-v7-21.0.3" level="project" />
+    <orderEntry type="library" exported="" name="jxl-2.6.9" level="project" />
+    <orderEntry type="library" exported="" name="poi-ooxml-schemas-3.13-20150929" level="project" />
     <orderEntry type="library" exported="" name="support-v4-21.0.3" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-21.0.3" level="project" />
-    <orderEntry type="library" name="jxl-2.6.9" level="project" />
-    <orderEntry type="library" name="poi-3.13-20150929" level="project" />
+    <orderEntry type="library" exported="" name="poi-3.13-20150929" level="project" />
+    <orderEntry type="library" exported="" name="xmlbeans-2.3.0" level="project" />
+    <orderEntry type="library" exported="" name="poi-ooxml" level="project" />
+    <orderEntry type="library" exported="" name="dom4j-1.6" level="project" />
   </component>
 </module>

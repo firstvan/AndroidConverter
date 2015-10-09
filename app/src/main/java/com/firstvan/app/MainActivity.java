@@ -12,7 +12,11 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Scanner;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -37,6 +41,30 @@ public class MainActivity extends ActionBarActivity {
         File folder = new File(Environment.getExternalStorageDirectory() + "/Atalakito");
         if (!folder.exists()) {
             folder.mkdir();
+        }
+
+        itemCollNo.setText("1");
+        pieceCollNo.setText("7");
+
+       try
+        {
+            Scanner scanner = new Scanner(new File(Environment.getExternalStorageDirectory() + "/Atalakito/META.txt"));
+            int first = scanner.nextInt();
+            int second = scanner.nextInt();
+            itemCollNo.setText(String.valueOf(first));
+            pieceCollNo.setText(String.valueOf(second));
+            scanner.close();
+        }
+        catch (Exception e)
+        {
+            File file = new File(Environment.getExternalStorageDirectory() + "/Atalakito/META.txt");
+            try {
+                BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+                bw.write("1 7");
+                bw.flush();
+                bw.close();
+            } catch (IOException e1) {
+            }
         }
     }
 
@@ -107,6 +135,16 @@ public class MainActivity extends ActionBarActivity {
     //Filepicker
 
     public void ConvertIt(View v){
+        File file = new File(Environment.getExternalStorageDirectory() + "/Atalakito/META.txt");
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+            bw.write(itemCollNo.getText() + " " + pieceCollNo.getText());
+            bw.flush();
+            bw.close();
+        } catch (IOException e1) {
+            Toast.makeText(this, "Hiba", Toast.LENGTH_LONG);
+        }
+
         if(fileSaveText.getText().toString().isEmpty()){
             Toast.makeText(this, "Nincs kitöltve a mentesi hely.", Toast.LENGTH_SHORT).show();
             return;

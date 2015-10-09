@@ -6,9 +6,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.PowerManager;
 import android.widget.Toast;
-//import jxl.Cell;
-import jxl.Sheet;
-import jxl.Workbook;
+
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -97,39 +95,6 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
 
         File inputWorkbook = new File(excelFile);
         if(inputWorkbook.exists()){
-            /*Workbook w;
-            try {
-                BufferedWriter bw = new BufferedWriter(new FileWriter(new File(saveFile)));
-                bw.write("Cikkszam\tdarab\n");
-                w = Workbook.getWorkbook(inputWorkbook);
-                // Get the first sheet
-                Sheet sheet = w.getSheet(0);
-                // Loop over column and lines
-                for (int j = 1; j < sheet.getRows(); j++) {
-                    Cell ean = sheet.getCell(0, j);
-                    Cell db = sheet.getCell(6, j);
-                    if (!db.getContents().isEmpty() && !db.getContents().contains("Tetel") && !db.getContents().contains("Osszes")) {
-                        String darab = db.getContents();
-                        if(darab.toLowerCase().contains(" db")){
-                            darab = darab.substring(0, darab.toLowerCase().indexOf(" db"));
-                        }
-                        else if(darab.toLowerCase().contains("db")){
-                            darab = darab.substring(0, darab.toLowerCase().indexOf("db"));
-                        }
-
-                        bw.write(ean.getContents() + "\t" + darab + "\n" );
-                        counter++;
-                    }
-                    percentage = (j / ((double) sheet.getRows())) * 100;
-                    publishProgress(percentage.intValue());
-                }
-
-                bw.flush();
-                bw.close();
-
-            } catch (Exception e){
-                return -1;
-            }*/
 
             //POI Api
 
@@ -142,7 +107,7 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
                 }
                 else {
                     bw = new BufferedWriter(new FileWriter(new File(saveFile)));
-                    bw.write("Cikkszam\tdarab\n");
+                    bw.write("cikkszam\tdarab\n");
                 }
                 myInput = new FileInputStream(excelFile);
                 // Create a POIFSFileSystem object
