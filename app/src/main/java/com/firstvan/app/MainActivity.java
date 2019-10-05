@@ -20,8 +20,10 @@ import android.widget.Toast;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Scanner;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText pieceCollNo;
     private CheckBox check;
     private Intent myFileChooser;
+    private InputStream excelFile;
 
 
     @Override
@@ -40,19 +43,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    READ_STORAGE);
-        }
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                     READ_STORAGE);
         }
 
@@ -137,24 +133,17 @@ public class MainActivity extends AppCompatActivity {
             case FILE_SELECT_CODE:
                 if (resultCode == RESULT_OK) {
                     if (data.getData() != null) {
-                        final String uri = getPath(data.getData());
-                        fileOpenText.setText(uri);
+                        try {
+                            excelFile = getContentResolver().openInputStream(data.getData());
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                        fileOpenText.setText(data.getData().getPath());
                     }
                 }
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    public String getPath(final Uri uri) {
-        String[] projection = { MediaStore.Images.Media.DATA };
-        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
-        if (cursor == null) return null;
-        int column_index =             cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-        String s=cursor.getString(column_index);
-        cursor.close();
-        return s;
     }
 
     //Filepicker
@@ -180,15 +169,15 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        String saveFile = "/sdcard/Atalakito/" + fileSaveText.getText() + ".txt";
+        String saveFile = Environment.getExternalStorageDirectory().getPath() +
+                "/Atalakito/" + fileSaveText.getText() + ".txt";
 
         int item = Integer.parseInt(itemCollNo.getText().toString());
         int piece = Integer.parseInt(pieceCollNo.getText().toString());
         boolean c = check.isChecked();
-        final ExcelConverter excelConverter = new ExcelConverter(fileOpenText.getText().toString(), saveFile, MainActivity.this, item, piece, c);
+        final ExcelConverter excelConverter = new ExcelConverter(excelFile,
+                fileOpenText.getText().toString(), saveFile, MainActivity.this, item, piece, c);
         excelConverter.execute("");
-
-
-
+        fileOpenText.setText("");
     }
 }

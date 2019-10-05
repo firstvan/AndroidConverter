@@ -31,9 +31,12 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
     private int itemNoColumn;
     private int pieceNoColumn;
     private boolean appendToFile;
+    private InputStream excelFileStream;
 
 
-    public ExcelConverter(String eFile, String sFile, Context context, int itNo, int piNo, boolean appendToFile){
+    public ExcelConverter(final InputStream eFileStream, String eFile, String sFile,
+                          Context context, int itNo, int piNo, boolean appendToFile){
+        excelFileStream = eFileStream;
         excelFile = eFile;
         saveFile = sFile;
         percentage = 0.0;
@@ -95,103 +98,101 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
     protected Integer doInBackground(String... params) {
         int counter = 0;
 
-        File inputWorkbook = new File(excelFile);
-        if(inputWorkbook.exists()){
 
-            //POI Api
+        //POI Api
+        try {
+            BufferedWriter bw;
 
-            FileInputStream myInput = null;
-            try {
-                BufferedWriter bw;
+            if(appendToFile) {
+                bw = new BufferedWriter(new FileWriter(saveFile, true));
+            }
+            else {
+                File newFile = new File(saveFile);
+                newFile.createNewFile();
+                bw = new BufferedWriter(new FileWriter(newFile));
+                bw.write("cikkszam\tdarab\n");
+            }
+            // Create a POIFSFileSystem object
+            POIFSFileSystem myFileSystem = new POIFSFileSystem(excelFileStream);
 
-                if(appendToFile) {
-                    bw = new BufferedWriter(new FileWriter(saveFile, true));
+            // Create a workbook using the File System
+            HSSFWorkbook myWorkBook = new HSSFWorkbook(myFileSystem);
+
+            // Get the first sheet from workbook
+            HSSFSheet mySheet = myWorkBook.getSheetAt(0);
+            int allRowNum = mySheet.getLastRowNum();
+
+            /** We now need something to iterate through the cells.**/
+            Iterator<Row> rowIter = mySheet.rowIterator();
+            rowIter.next();
+            int actualRow = 1;
+            while(rowIter.hasNext()){
+                HSSFRow myRow = (HSSFRow) rowIter.next();
+
+                HSSFCell pieceNoCell = myRow.getCell(pieceNoColumn - 1);
+                String pieceNo = "";
+                if(pieceNoCell == null)
+                {
+                    actualRow++;
+                    continue;
                 }
-                else {
-                    bw = new BufferedWriter(new FileWriter(new File(saveFile)));
-                    bw.write("cikkszam\tdarab\n");
+                switch(pieceNoCell.getCellType()){
+                    case Cell.CELL_TYPE_NUMERIC:
+                        pieceNo = String.valueOf(pieceNoCell.getNumericCellValue());
+                        break;
+                    case Cell.CELL_TYPE_STRING:
+                        pieceNo = pieceNoCell.getStringCellValue();
+                        break;
+                    case Cell.CELL_TYPE_BLANK:
+                        pieceNo = "";
+                        break;
+                    case Cell.CELL_TYPE_BOOLEAN:
+                        pieceNo = "";
+                        break;
+                    case Cell.CELL_TYPE_ERROR:
+                        pieceNo = "";
+                        break;
+                    case Cell.CELL_TYPE_FORMULA:
+                        pieceNo = "";
+                        break;
                 }
-                myInput = new FileInputStream(excelFile);
-                // Create a POIFSFileSystem object
-                POIFSFileSystem myFileSystem = new POIFSFileSystem(myInput);
 
-                // Create a workbook using the File System
-                HSSFWorkbook myWorkBook = new HSSFWorkbook(myFileSystem);
-
-                // Get the first sheet from workbook
-                HSSFSheet mySheet = myWorkBook.getSheetAt(0);
-                int allRowNum = mySheet.getLastRowNum();
-
-                /** We now need something to iterate through the cells.**/
-                Iterator<Row> rowIter = mySheet.rowIterator();
-                rowIter.next();
-                int actualRow = 1;
-                while(rowIter.hasNext()){
-                    HSSFRow myRow = (HSSFRow) rowIter.next();
-
-                    HSSFCell pieceNoCell = myRow.getCell(pieceNoColumn - 1);
-                    String pieceNo = "";
-                    if(pieceNoCell == null)
-                    {
-                        actualRow++;
+                if(!pieceNo.isEmpty() && !pieceNo.contains("Tétel") && !pieceNo.contains("Összes")){
+                    HSSFCell itemNoCell = myRow.getCell(itemNoColumn - 1);
+                    if(itemNoCell == null){
                         continue;
                     }
-                    switch(pieceNoCell.getCellType()){
-                        case Cell.CELL_TYPE_NUMERIC:
-                            pieceNo = String.valueOf(pieceNoCell.getNumericCellValue());
-                            break;
-                        case Cell.CELL_TYPE_STRING:
-                            pieceNo = pieceNoCell.getStringCellValue();
-                            break;
-                        case Cell.CELL_TYPE_BLANK:
-                            pieceNo = "";
-                            break;
-                        case Cell.CELL_TYPE_BOOLEAN:
-                            pieceNo = "";
-                            break;
-                        case Cell.CELL_TYPE_ERROR:
-                            pieceNo = "";
-                            break;
-                        case Cell.CELL_TYPE_FORMULA:
-                            pieceNo = "";
-                            break;
+                    String itemNo = itemNoCell.getStringCellValue();
+
+                    if (pieceNo.toLowerCase().contains(" db")){
+                        pieceNo = pieceNo.substring(0, pieceNo.toLowerCase().indexOf(" db"));
+                    }
+                    else if(pieceNo.toLowerCase().contains("db")){
+                        pieceNo = pieceNo.substring(0, pieceNo.toLowerCase().indexOf("db"));
+                    } else {
+                        double dszam = Double.parseDouble(pieceNo);
+                        pieceNo = String.format("%.0f", dszam);
                     }
 
-                    if(!pieceNo.isEmpty() && !pieceNo.contains("Tétel") && !pieceNo.contains("Összes")){
-                        HSSFCell itemNoCell = myRow.getCell(itemNoColumn - 1);
-                        if(itemNoCell == null){
-                            continue;
-                        }
-                        String itemNo = itemNoCell.getStringCellValue();
-
-                        if (pieceNo.toLowerCase().contains(" db")){
-                            pieceNo = pieceNo.substring(0, pieceNo.toLowerCase().indexOf(" db"));
-                        }
-                        else if(pieceNo.toLowerCase().contains("db")){
-                            pieceNo = pieceNo.substring(0, pieceNo.toLowerCase().indexOf("db"));
-                        } else {
-                            double dszam = Double.parseDouble(pieceNo);
-                            pieceNo = String.format("%.0f", dszam);
-                        }
-
-                        bw.write(itemNo + "\t" + pieceNo + "\n" );
-                        bw.flush();
-                        counter++;
-                    }
-
-                    percentage = (actualRow / ((double) allRowNum)) * 100;
-                    publishProgress(percentage.intValue());
-
-                    actualRow++;
+                    bw.write(itemNo + "\t" + pieceNo + "\n" );
+                    bw.flush();
+                    counter++;
                 }
 
-                bw.flush();
-                bw.close();
-            } catch (FileNotFoundException e) {
-                return -2;
-            } catch (IOException e) {
-                return -3;
+                percentage = (actualRow / ((double) allRowNum)) * 100;
+                publishProgress(percentage.intValue());
+
+                actualRow++;
             }
+
+            bw.flush();
+            bw.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return -2;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -3;
         }
 
         return counter;
@@ -236,9 +237,10 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
     protected void onPostExecute(Integer result) {
         mWakeLock.release();
         progressDialog.dismiss();
-        if (result != null)
+        if (result >= 0)
             Toast.makeText(context, "Feldolgozott termek: " + result, Toast.LENGTH_LONG).show();
-        else
+        else {
             Toast.makeText(context,"Feldolgozasi hiba!", Toast.LENGTH_LONG).show();
+        }
     }
 }
