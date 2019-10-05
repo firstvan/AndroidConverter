@@ -4,7 +4,9 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.os.PowerManager;
+import android.provider.MediaStore;
 import android.widget.Toast;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -155,7 +157,7 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
                             break;
                     }
 
-                    if(!pieceNo.isEmpty() && !pieceNo.contains("Tétel") && !pieceNo.contains("Összes")){
+                    if(!pieceNo.isEmpty() && !pieceNo.contains("TÃ©tel") && !pieceNo.contains("Ã–sszes")){
                         HSSFCell itemNoCell = myRow.getCell(itemNoColumn - 1);
                         if(itemNoCell == null){
                             continue;

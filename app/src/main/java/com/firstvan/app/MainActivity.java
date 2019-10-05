@@ -1,10 +1,16 @@
 package com.firstvan.app;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,19 +24,37 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
 
+    private static final int READ_STORAGE = 0;
     private EditText fileOpenText;
     private EditText fileSaveText;
     private EditText itemCollNo;
     private EditText pieceCollNo;
     private CheckBox check;
+    private Intent myFileChooser;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    READ_STORAGE);
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    READ_STORAGE);
+        }
 
         fileOpenText = (EditText)findViewById(R.id.openFileText);
         fileSaveText = (EditText)findViewById(R.id.saveFileText);
@@ -96,15 +120,11 @@ public class MainActivity extends ActionBarActivity {
     private static final int FILE_SELECT_CODE = 0;
 
     private void showFileChooser() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        myFileChooser = new Intent(Intent.ACTION_GET_CONTENT);
+        myFileChooser.setType("*/*");
 
         try {
-            startActivityForResult(
-                    Intent.createChooser(intent, "Fajl kiválasztasa konvertalasra" +
-                            ""),
-                    FILE_SELECT_CODE);
+            startActivityForResult(myFileChooser, FILE_SELECT_CODE);
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(this, "Please install a File Manager.",
                     Toast.LENGTH_SHORT).show();
@@ -116,15 +136,25 @@ public class MainActivity extends ActionBarActivity {
         switch (requestCode) {
             case FILE_SELECT_CODE:
                 if (resultCode == RESULT_OK) {
-                    Uri uri = data.getData();
-
-                    String path = null;
-                    path = uri.getPath();
-                    fileOpenText.setText(path);
+                    if (data.getData() != null) {
+                        final String uri = getPath(data.getData());
+                        fileOpenText.setText(uri);
+                    }
                 }
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public String getPath(final Uri uri) {
+        String[] projection = { MediaStore.Images.Media.DATA };
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if (cursor == null) return null;
+        int column_index =             cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        String s=cursor.getString(column_index);
+        cursor.close();
+        return s;
     }
 
     //Filepicker
@@ -141,7 +171,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         if(fileSaveText.getText().toString().isEmpty()){
-            Toast.makeText(this, "Nincs kitöltve a mentesi hely.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Nincs kitÃ¶ltve a mentesi hely.", Toast.LENGTH_SHORT).show();
             return;
         }
 
