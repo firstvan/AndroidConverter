@@ -1,16 +1,13 @@
 package com.firstvan.app;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Environment;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,7 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Scanner;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     private static final int READ_STORAGE = 0;
     private EditText fileOpenText;
@@ -58,7 +55,8 @@ public class MainActivity extends AppCompatActivity {
         pieceCollNo = (EditText)findViewById(R.id.PieceNumberColl);
         check = (CheckBox)findViewById(R.id.appendToFile);
 
-        File folder = new File(Environment.getExternalStorageDirectory() + "/Atalakito");
+        File folder = new File(Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_DOWNLOADS) + "/Atalakito");
         if (!folder.exists()) {
             folder.mkdir();
         }
@@ -68,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
        try
         {
-            Scanner scanner = new Scanner(new File(Environment.getExternalStorageDirectory() + "/Atalakito/META.txt"));
+            Scanner scanner = new Scanner(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/Atalakito/META.txt"));
             int first = scanner.nextInt();
             int second = scanner.nextInt();
             itemCollNo.setText(String.valueOf(first));
@@ -77,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         }
         catch (Exception e)
         {
-            File file = new File(Environment.getExternalStorageDirectory() + "/Atalakito/META.txt");
+            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/Atalakito/META.txt");
             try {
                 BufferedWriter bw = new BufferedWriter(new FileWriter(file));
                 bw.write("1 7");
@@ -149,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
     //Filepicker
 
     public void ConvertIt(View v){
-        File file = new File(Environment.getExternalStorageDirectory() + "/Atalakito/META.txt");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/Atalakito/META.txt");
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(file));
             bw.write(itemCollNo.getText() + " " + pieceCollNo.getText());
@@ -169,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        String saveFile = Environment.getExternalStorageDirectory().getPath() +
+        String saveFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() +
                 "/Atalakito/" + fileSaveText.getText() + ".txt";
 
         int item = Integer.parseInt(itemCollNo.getText().toString());
