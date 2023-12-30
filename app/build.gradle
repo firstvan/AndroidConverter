@@ -27,8 +27,8 @@ android {
         applicationId "firstvan.converter"
         minSdkVersion 33
         targetSdkVersion 33
-        versionCode 2
-        versionName "2_0"
+        versionCode 3
+        versionName "3_0"
         multiDexEnabled true
         setProperty("archivesBaseName", "converter_app_v_$versionName")
     }
