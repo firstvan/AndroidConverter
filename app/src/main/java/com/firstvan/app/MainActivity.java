@@ -4,8 +4,11 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import android.view.Menu;
@@ -33,6 +36,7 @@ public class MainActivity extends Activity {
     private CheckBox check;
     private Intent myFileChooser;
     private InputStream excelFile;
+    private String excelFilename;
 
 
     @Override
@@ -132,7 +136,9 @@ public class MainActivity extends Activity {
                 if (resultCode == RESULT_OK) {
                     if (data.getData() != null) {
                         try {
-                            excelFile = getContentResolver().openInputStream(data.getData());
+                            Uri uri = data.getData();
+                            excelFile = getContentResolver().openInputStream(uri);
+                            excelFilename = getFileName(uri);
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         }
@@ -173,9 +179,36 @@ public class MainActivity extends Activity {
         int item = Integer.parseInt(itemCollNo.getText().toString());
         int piece = Integer.parseInt(pieceCollNo.getText().toString());
         boolean c = check.isChecked();
-        final ExcelConverter excelConverter = new ExcelConverter(excelFile,
+        final ExcelConverter excelConverter = new ExcelConverter(excelFile, excelFilename,
                 fileOpenText.getText().toString(), saveFile, MainActivity.this, item, piece, c);
         excelConverter.execute("");
         fileOpenText.setText("");
+    }
+
+    private String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    if (index >= 0) {
+                        result = cursor.getString(index);
+                    } else {
+                        throw new UnsupportedOperationException("Hiba a fájlnév kiolvasásakor");
+                    }
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 }

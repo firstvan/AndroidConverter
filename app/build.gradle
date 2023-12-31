@@ -28,7 +28,7 @@ android {
         minSdkVersion 33
         targetSdkVersion 33
         versionCode 3
-        versionName "3_0"
+        versionName "3_1"
         multiDexEnabled true
         setProperty("archivesBaseName", "converter_app_v_$versionName")
     }
@@ -47,6 +47,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'org.apache.poi:poi:5.2.5'
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
 }

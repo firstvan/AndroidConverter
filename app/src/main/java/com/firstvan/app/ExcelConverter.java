@@ -4,25 +4,28 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.os.PowerManager;
-import android.provider.MediaStore;
 import android.widget.Toast;
-
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Cell;
-
-import java.io.*;
-import java.util.Iterator;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
 
     private String excelFile;
+    private String fileNormalName;
     private String saveFile;
     private Double percentage;
     private PowerManager.WakeLock mWakeLock;
@@ -34,8 +37,9 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
     private InputStream excelFileStream;
 
 
-    public ExcelConverter(final InputStream eFileStream, String eFile, String sFile,
+    public ExcelConverter(final InputStream eFileStream, String fileNormalName, String eFile, String sFile,
                           Context context, int itNo, int piNo, boolean appendToFile){
+        this.fileNormalName = fileNormalName;
         excelFileStream = eFileStream;
         excelFile = eFile;
         saveFile = sFile;
@@ -112,14 +116,21 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
                 bw = new BufferedWriter(new FileWriter(newFile));
                 bw.write("cikkszam\tdarab\n");
             }
-            // Create a POIFSFileSystem object
-            POIFSFileSystem myFileSystem = new POIFSFileSystem(excelFileStream);
 
-            // Create a workbook using the File System
-            HSSFWorkbook myWorkBook = new HSSFWorkbook(myFileSystem);
+            Workbook myWorkBook;
+            if (fileNormalName.endsWith("xls")) {
+                // Create a POIFSFileSystem object
+                POIFSFileSystem myFileSystem = new POIFSFileSystem(excelFileStream);
+                // Create a workbook using the File System
+                myWorkBook = new HSSFWorkbook(myFileSystem);
+            } else if (fileNormalName.endsWith("xlsx")) {
+                myWorkBook = new XSSFWorkbook(excelFileStream);
+            } else {
+                throw new UnsupportedOperationException("Hiba ilyen fájltípus nincs támogatva");
+            }
 
             // Get the first sheet from workbook
-            HSSFSheet mySheet = myWorkBook.getSheetAt(0);
+            Sheet mySheet = myWorkBook.getSheetAt(0);
             int allRowNum = mySheet.getLastRowNum();
 
             /** We now need something to iterate through the cells.**/
@@ -127,38 +138,25 @@ public class ExcelConverter extends AsyncTask<String, Integer, Integer>{
             rowIter.next();
             int actualRow = 1;
             while(rowIter.hasNext()){
-                HSSFRow myRow = (HSSFRow) rowIter.next();
+                Row myRow = rowIter.next();
 
-                HSSFCell pieceNoCell = myRow.getCell(pieceNoColumn - 1);
+                Cell pieceNoCell = myRow.getCell(pieceNoColumn - 1);
                 String pieceNo = "";
                 if(pieceNoCell == null)
                 {
                     actualRow++;
                     continue;
                 }
-                switch(pieceNoCell.getCellType()){
-                    case Cell.CELL_TYPE_NUMERIC:
-                        pieceNo = String.valueOf(pieceNoCell.getNumericCellValue());
-                        break;
-                    case Cell.CELL_TYPE_STRING:
-                        pieceNo = pieceNoCell.getStringCellValue();
-                        break;
-                    case Cell.CELL_TYPE_BLANK:
-                        pieceNo = "";
-                        break;
-                    case Cell.CELL_TYPE_BOOLEAN:
-                        pieceNo = "";
-                        break;
-                    case Cell.CELL_TYPE_ERROR:
-                        pieceNo = "";
-                        break;
-                    case Cell.CELL_TYPE_FORMULA:
-                        pieceNo = "";
-                        break;
+                if (CellType.NUMERIC.equals(pieceNoCell.getCellType())) {
+                    pieceNo = String.valueOf(pieceNoCell.getNumericCellValue());
+                } else if (CellType.STRING.equals(pieceNoCell.getCellType())) {
+                    pieceNo = pieceNoCell.getStringCellValue();
+                } else {
+                    pieceNo = "";
                 }
 
                 if(!pieceNo.isEmpty() && !pieceNo.contains("Tétel") && !pieceNo.contains("Összes")){
-                    HSSFCell itemNoCell = myRow.getCell(itemNoColumn - 1);
+                    Cell itemNoCell = myRow.getCell(itemNoColumn - 1);
                     if(itemNoCell == null){
                         continue;
                     }
